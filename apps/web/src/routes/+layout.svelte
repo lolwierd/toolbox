@@ -8,7 +8,6 @@
   let { children } = $props();
   
   let searchQuery = $state('');
-  let sidebarOpen = $state(true);
   
   // Auto-detect OS theme preference
   $effect(() => {
@@ -42,56 +41,41 @@
 </script>
 
 <div class="layout">
-  <aside class="sidebar" class:collapsed={!sidebarOpen}>
+  <aside class="sidebar">
     <header class="sidebar-header">
       <a href="/" class="logo">
-        {#if sidebarOpen}
-          <span class="logo-text">Toolbox</span>
-        {/if}
+        <span class="logo-text">Toolbox</span>
       </a>
-      <button class="icon-btn toggle-btn" onclick={() => sidebarOpen = !sidebarOpen}>
-        {#if sidebarOpen}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        {:else}
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        {/if}
-      </button>
     </header>
     
-    {#if sidebarOpen}
-      <div class="sidebar-search">
-        <input 
-          type="search" 
-          placeholder="Search tools..." 
-          bind:value={searchQuery}
-        />
-      </div>
-      
-      <nav class="sidebar-nav">
-        {#each categories as [key, cat]}
-          {@const tools = toolsByCategory()[key] ?? []}
-          {#if tools.length > 0}
-            <div class="nav-category">
-              <span class="nav-category-label">{cat.label}</span>
-              {#each tools as tool}
-                {@const isActive = page.url.pathname === `/tools/${tool.id}`}
-                <a 
-                  href="/tools/{tool.id}" 
-                  class="nav-item"
-                  class:active={isActive}
-                >
-                  {tool.title}
-                </a>
-              {/each}
-            </div>
-          {/if}
-        {/each}
-      </nav>
-    {/if}
+    <div class="sidebar-search">
+      <input 
+        type="search" 
+        placeholder="Search tools..." 
+        bind:value={searchQuery}
+      />
+    </div>
+    
+    <nav class="sidebar-nav">
+      {#each categories as [key, cat]}
+        {@const tools = toolsByCategory()[key] ?? []}
+        {#if tools.length > 0}
+          <div class="nav-category">
+            <span class="nav-category-label">{cat.label}</span>
+            {#each tools as tool}
+              {@const isActive = page.url.pathname === `/tools/${tool.id}`}
+              <a 
+                href="/tools/{tool.id}" 
+                class="nav-item"
+                class:active={isActive}
+              >
+                {tool.title}
+              </a>
+            {/each}
+          </div>
+        {/if}
+      {/each}
+    </nav>
   </aside>
   
   <main class="main">
@@ -112,13 +96,8 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    transition: width 0.3s ease;
     flex-shrink: 0;
     overflow: hidden;
-  }
-  
-  .sidebar.collapsed {
-    width: 56px;
   }
   
   .sidebar-header {
@@ -153,21 +132,6 @@
     overflow: hidden;
   }
   
-  .icon-btn {
-    padding: 0.5rem;
-    color: var(--text-muted);
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, color 0.15s;
-  }
-  
-  .icon-btn:hover {
-    background: var(--bg-hover);
-    color: var(--text);
-  }
-  
   .sidebar-search {
     padding: 0.75rem;
     border-bottom: 1px solid var(--border);
@@ -181,6 +145,24 @@
     flex: 1;
     overflow-y: auto;
     padding: 0.5rem 0;
+  }
+
+  /* Minimal Scrollbar for Sidebar */
+  .sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .sidebar-nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 3px;
+  }
+  
+  .sidebar-nav:hover::-webkit-scrollbar-thumb {
+    background-color: var(--border);
   }
   
   .nav-category {
@@ -229,11 +211,6 @@
       top: 0;
       bottom: 0;
       z-index: 100;
-    }
-    
-    .sidebar.collapsed {
-      width: 0;
-      border: none;
     }
     
     .main {
