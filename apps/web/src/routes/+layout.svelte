@@ -3,11 +3,30 @@
   import { page } from '$app/state';
   import { TOOL_CATEGORIES, getAllTools } from '@toolbox/toolkit';
   import '$lib/tools/register';
+  import { browser } from '$app/environment';
 
   let { children } = $props();
   
   let searchQuery = $state('');
   let sidebarOpen = $state(true);
+  
+  // Auto-detect OS theme preference
+  $effect(() => {
+    if (browser) {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const updateTheme = (e: MediaQueryList | MediaQueryListEvent) => {
+        document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+      };
+      
+      // Set initial theme
+      updateTheme(mediaQuery);
+      
+      // Listen for changes
+      mediaQuery.addEventListener('change', updateTheme);
+      
+      return () => mediaQuery.removeEventListener('change', updateTheme);
+    }
+  });
   
   const categories = Object.entries(TOOL_CATEGORIES);
   
@@ -26,14 +45,20 @@
   <aside class="sidebar" class:collapsed={!sidebarOpen}>
     <header class="sidebar-header">
       <a href="/" class="logo">
-        <svg viewBox="0 0 32 32" width="24" height="24">
-          <rect width="32" height="32" rx="6" fill="var(--accent)"/>
-          <path d="M8 11h16M8 16h16M8 21h10" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>Toolbox</span>
+        {#if sidebarOpen}
+          <span class="logo-text">Toolbox</span>
+        {/if}
       </a>
-      <button class="toggle-btn" onclick={() => sidebarOpen = !sidebarOpen}>
-        {sidebarOpen ? '◀' : '▶'}
+      <button class="icon-btn toggle-btn" onclick={() => sidebarOpen = !sidebarOpen}>
+        {#if sidebarOpen}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        {:else}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        {/if}
       </button>
     </header>
     
@@ -87,42 +112,64 @@
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    transition: width 0.2s;
+    transition: width 0.3s ease;
     flex-shrink: 0;
+    overflow: hidden;
   }
   
   .sidebar.collapsed {
-    width: 48px;
+    width: 56px;
   }
   
   .sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 0.75rem;
     border-bottom: 1px solid var(--border);
+    min-height: 56px;
   }
   
   .logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     font-weight: 600;
     color: var(--text);
+    flex: 1;
+    min-width: 0;
   }
   
   .logo:hover {
     text-decoration: none;
   }
   
-  .toggle-btn {
-    padding: 0.25rem;
+  .logo-icon {
+    flex-shrink: 0;
+  }
+  
+  .logo-text {
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+  .icon-btn {
+    padding: 0.5rem;
     color: var(--text-muted);
-    font-size: 12px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  
+  .icon-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
   }
   
   .sidebar-search {
-    padding: 0.75rem 1rem;
+    padding: 0.75rem;
     border-bottom: 1px solid var(--border);
   }
   
@@ -155,6 +202,7 @@
     padding: 0.5rem 1rem 0.5rem 1.5rem;
     color: var(--text);
     font-size: 13px;
+    transition: background 0.15s, color 0.15s;
   }
   
   .nav-item:hover {
@@ -165,11 +213,31 @@
   .nav-item.active {
     background: var(--bg-active);
     color: var(--accent);
+    font-weight: 500;
   }
   
   .main {
     flex: 1;
     overflow: auto;
     padding: 2rem;
+  }
+  
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 100;
+    }
+    
+    .sidebar.collapsed {
+      width: 0;
+      border: none;
+    }
+    
+    .main {
+      width: 100%;
+    }
   }
 </style>
