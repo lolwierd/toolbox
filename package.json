@@ -1,0 +1,16 @@
+{
+  "name": "toolbox",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
+    "build": "pnpm -r run build",
+    "check": "pnpm -r run check",
+    "test": "pnpm --filter web test",
+    "test:watch": "pnpm --filter web test:watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
