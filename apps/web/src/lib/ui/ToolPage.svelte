@@ -13,6 +13,7 @@
   
   let files = $state<File[]>([]);
   let textInput = $state('');
+  let inputValues = $state<Record<string, any>>({});
   let options = $state<Record<string, unknown>>({});
   let output = $state<{ blob?: Blob; text?: string; filename?: string } | null>(null);
   let error = $state<string | null>(null);
@@ -22,6 +23,14 @@
   $effect(() => {
     const saved = getSettings(tool.id);
     options = { ...tool.defaults, ...saved };
+    // Reset inputs when tool changes
+    files = [];
+    textInput = '';
+    inputValues = {};
+    output = null;
+    error = null;
+    progress = null;
+    isRunning = false;
   });
   
   $effect(() => {
@@ -44,9 +53,11 @@
     const controller = new AbortController();
     
     try {
-      let input: ArrayBuffer | string | File[];
+      let input: ArrayBuffer | string | File[] | Record<string, any>;
       
-      if (tool.input.kind === 'file') {
+      if (tool.input.elements) {
+        input = inputValues;
+      } else if (tool.input.kind === 'file') {
         input = files;
       } else if (tool.input.kind === 'text' || tool.input.kind === 'json') {
         input = textInput;
@@ -115,16 +126,36 @@
   function reset() {
     files = [];
     textInput = '';
+    inputValues = {};
     output = null;
     error = null;
   }
   
-  const canRun = $derived(
-    (tool.input.kind === 'file' && files.length > 0) ||
-    (tool.input.kind === 'text' && textInput.length > 0) ||
-    (tool.input.kind === 'json' && textInput.length > 0) ||
-    tool.input.kind === 'none'
-  );
+  const canRun = $derived.by(() => {
+    if (tool.input.elements) {
+      // Check if at least one non-optional field has a value, 
+      // AND all required fields have values.
+      // If all are optional, at least one must be filled.
+      
+      const hasValue = (el: typeof tool.input.elements[0]) => {
+        const val = inputValues[el.name];
+        if (el.kind === 'file') return Array.isArray(val) && val.length > 0;
+        return typeof val === 'string' && val.length > 0;
+      };
+
+      const allRequiredFilled = tool.input.elements.every(el => 
+        el.optional ? true : hasValue(el)
+      );
+
+      const atLeastOneFilled = tool.input.elements.some(el => hasValue(el));
+
+      return allRequiredFilled && atLeastOneFilled;
+    }
+    return (tool.input.kind === 'file' && files.length > 0) ||
+           (tool.input.kind === 'text' && textInput.length > 0) ||
+           (tool.input.kind === 'json' && textInput.length > 0) ||
+           tool.input.kind === 'none';
+  });
 </script>
 
 <div class="tool-page">
@@ -140,7 +171,28 @@
     <section class="tool-section input-section">
       <h2>Input</h2>
       
-      {#if tool.input.kind === 'file'}
+      {#if tool.input.elements}
+        <div class="multi-input">
+          {#each tool.input.elements as el}
+            <div class="input-group">
+              {#if el.label}<label class="input-label" for={el.name}>{el.label}</label>{/if}
+              {#if el.kind === 'file'}
+                <Dropzone 
+                  input={el} 
+                  files={inputValues[el.name] || []} 
+                  onFilesChange={(f) => inputValues[el.name] = f} 
+                />
+              {:else if el.kind === 'text' || el.kind === 'json'}
+                <TextInput 
+                  input={el} 
+                  value={inputValues[el.name] || ''} 
+                  onValueChange={(v) => inputValues[el.name] = v} 
+                />
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {:else if tool.input.kind === 'file'}
         <Dropzone 
           input={tool.input} 
           {files} 
@@ -349,6 +401,24 @@
   
   .output-size {
     font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .multi-input {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .input-label {
+    font-size: 0.875rem;
+    font-weight: 500;
     color: var(--text-muted);
   }
 </style>

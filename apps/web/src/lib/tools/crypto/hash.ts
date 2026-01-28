@@ -17,7 +17,10 @@ export const hashGenerator = defineTool({
   
   input: {
     kind: 'text',
-    placeholder: 'Enter text to hash...',
+    elements: [
+      { name: 'text', kind: 'text', label: 'Text Input', placeholder: 'Enter text to hash...', optional: true },
+      { name: 'file', kind: 'file', label: 'File Input', optional: true },
+    ],
   },
   
   output: {
@@ -31,14 +34,24 @@ export const hashGenerator = defineTool({
   },
   
   async runBrowser(_ctx, input, options) {
-    const text = input as string;
+    const inputs = input as Record<string, any>;
+    const text = inputs.text as string;
+    const files = inputs.file as File[];
     
-    if (!text) {
-      throw new Error('Please enter some text');
+    if (!text && (!files || files.length === 0)) {
+      throw new Error('Please provide text or a file');
     }
     
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
+    let data: Uint8Array;
+    
+    if (files && files.length > 0) {
+      const arrayBuffer = await files[0].arrayBuffer();
+      data = new Uint8Array(arrayBuffer);
+    } else {
+      const encoder = new TextEncoder();
+      data = encoder.encode(text);
+    }
+
     const hashBuffer = await crypto.subtle.digest(options.algorithm, data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     let hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');

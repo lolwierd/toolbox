@@ -104,8 +104,10 @@ describe('colorConvert', () => {
 describe('regexTest', () => {
   describe('basic matching', () => {
     it('finds digit matches', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'abc123def', {
-        pattern: '\\d+',
+      const result = await regexTest.runBrowser!(mockContext, {
+        pattern: '\d+',
+        text: 'abc123def'
+      }, {
         flags: 'g',
         showGroups: true,
       });
@@ -115,8 +117,10 @@ describe('regexTest', () => {
     });
 
     it('finds multiple matches with global flag', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'cat bat rat', {
+      const result = await regexTest.runBrowser!(mockContext, {
         pattern: '[cbr]at',
+        text: 'cat bat rat'
+      }, {
         flags: 'g',
         showGroups: false,
       });
@@ -127,8 +131,10 @@ describe('regexTest', () => {
     });
 
     it('finds single match without global flag', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'abc123def456', {
-        pattern: '\\d+',
+      const result = await regexTest.runBrowser!(mockContext, {
+        pattern: '\d+',
+        text: 'abc123def456'
+      }, {
         flags: '',
         showGroups: false,
       });
@@ -138,8 +144,10 @@ describe('regexTest', () => {
     });
 
     it('reports no matches', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'abcdef', {
-        pattern: '\\d+',
+      const result = await regexTest.runBrowser!(mockContext, {
+        pattern: '\d+',
+        text: 'abcdef'
+      }, {
         flags: 'g',
         showGroups: false,
       });
@@ -149,8 +157,10 @@ describe('regexTest', () => {
 
   describe('capture groups', () => {
     it('shows numbered capture groups', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'hello world', {
-        pattern: '(\\w+) (\\w+)',
+      const result = await regexTest.runBrowser!(mockContext, {
+        pattern: '(\w+) (\w+)',
+        text: 'hello world'
+      }, {
         flags: '',
         showGroups: true,
       });
@@ -159,8 +169,10 @@ describe('regexTest', () => {
     });
 
     it('shows named capture groups', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'John Doe', {
-        pattern: '(?<first>\\w+) (?<last>\\w+)',
+      const result = await regexTest.runBrowser!(mockContext, {
+        pattern: '(?<first>\w+) (?<last>\w+)',
+        text: 'John Doe'
+      }, {
         flags: '',
         showGroups: true,
       });
@@ -169,8 +181,10 @@ describe('regexTest', () => {
     });
 
     it('hides groups when showGroups is false', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'hello world', {
-        pattern: '(\\w+) (\\w+)',
+      const result = await regexTest.runBrowser!(mockContext, {
+        pattern: '(\w+) (\w+)',
+        text: 'hello world'
+      }, {
         flags: '',
         showGroups: false,
       });
@@ -181,8 +195,10 @@ describe('regexTest', () => {
 
   describe('flags', () => {
     it('handles case-insensitive flag', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'HELLO hello', {
+      const result = await regexTest.runBrowser!(mockContext, {
         pattern: 'hello',
+        text: 'HELLO hello'
+      }, {
         flags: 'gi',
         showGroups: false,
       });
@@ -190,8 +206,10 @@ describe('regexTest', () => {
     });
 
     it('handles multiline flag', async () => {
-      const result = await regexTest.runBrowser!(mockContext, 'line1\nline2', {
+      const result = await regexTest.runBrowser!(mockContext, {
         pattern: '^line',
+        text: 'line1\nline2'
+      }, {
         flags: 'gm',
         showGroups: false,
       });
@@ -201,32 +219,40 @@ describe('regexTest', () => {
 
   describe('error handling', () => {
     it('throws on empty pattern', async () => {
-      await expect(regexTest.runBrowser!(mockContext, 'test', {
+      await expect(regexTest.runBrowser!(mockContext, {
         pattern: '',
+        text: 'test'
+      }, {
         flags: 'g',
         showGroups: false,
       })).rejects.toThrow('Please enter a regex pattern');
     });
 
     it('throws on empty input', async () => {
-      await expect(regexTest.runBrowser!(mockContext, '', {
-        pattern: '\\d+',
+      await expect(regexTest.runBrowser!(mockContext, {
+        pattern: '\d+',
+        text: ''
+      }, {
         flags: 'g',
         showGroups: false,
       })).rejects.toThrow('Please enter some test text');
     });
 
     it('throws on invalid regex', async () => {
-      await expect(regexTest.runBrowser!(mockContext, 'test', {
+      await expect(regexTest.runBrowser!(mockContext, {
         pattern: '(unclosed',
+        text: 'test'
+      }, {
         flags: 'g',
         showGroups: false,
       })).rejects.toThrow('Invalid regex');
     });
 
     it('throws on invalid flags', async () => {
-      await expect(regexTest.runBrowser!(mockContext, 'test', {
+      await expect(regexTest.runBrowser!(mockContext, {
         pattern: 'test',
+        text: 'test'
+      }, {
         flags: 'xyz',
         showGroups: false,
       })).rejects.toThrow('Invalid regex');
@@ -262,7 +288,7 @@ describe('queryString', () => {
         sortKeys: false,
         encodeValues: true,
       });
-      const parsed = JSON.parse(result);
+      const parsed = JSON.JSON.parse(result);
       expect(parsed).toEqual({ name: 'John Doe', city: 'New York' });
     });
 

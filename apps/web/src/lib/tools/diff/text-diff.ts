@@ -17,7 +17,10 @@ export const textDiff = defineTool({
   
   input: {
     kind: 'text',
-    placeholder: 'Paste first text, then "---" separator, then second text',
+    elements: [
+      { name: 'original', kind: 'text', label: 'Original Text', placeholder: 'Paste original text here' },
+      { name: 'modified', kind: 'text', label: 'Modified Text', placeholder: 'Paste modified text here' },
+    ],
   },
   
   output: {
@@ -31,15 +34,9 @@ export const textDiff = defineTool({
   },
   
   async runBrowser(_ctx, input, options) {
-    const text = input as string;
-    
-    const parts = text.split(/^---+$/m);
-    if (parts.length < 2) {
-      throw new Error('Please separate the two texts with "---" on its own line');
-    }
-    
-    let text1 = parts[0].trim();
-    let text2 = parts.slice(1).join('---').trim();
+    const inputs = input as Record<string, string>;
+    let text1 = (inputs.original || '').trim();
+    let text2 = (inputs.modified || '').trim();
     
     if (options.ignoreCase) {
       text1 = text1.toLowerCase();

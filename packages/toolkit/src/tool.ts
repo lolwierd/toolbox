@@ -9,6 +9,14 @@ export interface ToolInput {
   multiple?: boolean;
   label?: string;
   placeholder?: string;
+  elements?: {
+    name: string;
+    kind: ToolIOKind;
+    label?: string;
+    placeholder?: string;
+    accept?: string[];
+    optional?: boolean;
+  }[];
 }
 
 export interface ToolOutput {
@@ -46,7 +54,7 @@ export interface ToolDefinition<TOptions extends z.ZodTypeAny = z.ZodTypeAny> {
 
   runBrowser?: (
     ctx: BrowserToolContext,
-    input: ArrayBuffer | string | File[],
+    input: ArrayBuffer | string | File[] | Record<string, any>,
     options: z.infer<TOptions>
   ) => Promise<ArrayBuffer | string | Blob>;
 }

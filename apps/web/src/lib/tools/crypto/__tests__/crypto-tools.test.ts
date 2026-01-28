@@ -75,7 +75,7 @@ describe('base64Decode', () => {
 
 describe('hashGenerator', () => {
   it('generates SHA-256 hash', async () => {
-    const result = await hashGenerator.runBrowser!(mockContext, 'hello', {
+    const result = await hashGenerator.runBrowser!(mockContext, { text: 'hello' }, {
       algorithm: 'SHA-256',
       uppercase: false,
     });
@@ -83,7 +83,7 @@ describe('hashGenerator', () => {
   });
 
   it('generates SHA-1 hash', async () => {
-    const result = await hashGenerator.runBrowser!(mockContext, 'hello', {
+    const result = await hashGenerator.runBrowser!(mockContext, { text: 'hello' }, {
       algorithm: 'SHA-1',
       uppercase: false,
     });
@@ -91,7 +91,7 @@ describe('hashGenerator', () => {
   });
 
   it('generates SHA-512 hash', async () => {
-    const result = await hashGenerator.runBrowser!(mockContext, 'hello', {
+    const result = await hashGenerator.runBrowser!(mockContext, { text: 'hello' }, {
       algorithm: 'SHA-512',
       uppercase: false,
     });
@@ -101,7 +101,7 @@ describe('hashGenerator', () => {
   });
 
   it('generates uppercase hash', async () => {
-    const result = await hashGenerator.runBrowser!(mockContext, 'hello', {
+    const result = await hashGenerator.runBrowser!(mockContext, { text: 'hello' }, {
       algorithm: 'SHA-256',
       uppercase: true,
     });
@@ -110,8 +110,8 @@ describe('hashGenerator', () => {
 
   it('throws error for empty input', async () => {
     await expect(
-      hashGenerator.runBrowser!(mockContext, '', { algorithm: 'SHA-256', uppercase: false })
-    ).rejects.toThrow('Please enter some text');
+      hashGenerator.runBrowser!(mockContext, { text: '' }, { algorithm: 'SHA-256', uppercase: false })
+    ).rejects.toThrow('Please provide text or a file');
   });
 });
 

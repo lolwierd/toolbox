@@ -2,7 +2,6 @@ import { z } from 'zod';
 import { defineTool } from '@toolbox/toolkit';
 
 const optionsSchema = z.object({
-  pattern: z.string().describe('Regular expression pattern'),
   flags: z.string().describe('Regex flags (g, i, m, s, u)'),
   showGroups: z.boolean().describe('Show capture groups'),
 });
@@ -18,7 +17,10 @@ export const regexTest = defineTool({
 
   input: {
     kind: 'text',
-    placeholder: 'Enter test string...',
+    elements: [
+      { name: 'pattern', kind: 'text', label: 'Regex Pattern', placeholder: 'Enter regex pattern (e.g. ^[a-z]+$)' },
+      { name: 'text', kind: 'text', label: 'Test String', placeholder: 'Enter text to test against...' },
+    ],
   },
 
   output: {
@@ -27,17 +29,18 @@ export const regexTest = defineTool({
 
   optionsSchema,
   defaults: {
-    pattern: '',
     flags: 'g',
     showGroups: true,
   },
 
   async runBrowser(_ctx, input, options) {
-    const text = input as string;
-    const { pattern, flags, showGroups } = options;
+    const inputs = input as Record<string, string>;
+    const pattern = inputs.pattern;
+    const text = inputs.text;
+    const { flags, showGroups } = options;
 
     if (!pattern) {
-      throw new Error('Please enter a regex pattern in the options');
+      throw new Error('Please enter a regex pattern');
     }
 
     if (!text) {

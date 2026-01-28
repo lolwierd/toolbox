@@ -17,7 +17,10 @@ export const yamlDiff = defineTool({
   
   input: {
     kind: 'text',
-    placeholder: 'Paste first YAML, then "---" separator, then second YAML',
+    elements: [
+      { name: 'original', kind: 'text', label: 'Original YAML', placeholder: 'Paste original YAML here' },
+      { name: 'modified', kind: 'text', label: 'Modified YAML', placeholder: 'Paste modified YAML here' },
+    ],
   },
   
   output: {
@@ -30,23 +33,18 @@ export const yamlDiff = defineTool({
   },
   
   async runBrowser(_ctx, input, options) {
-    const text = input as string;
-    
-    const parts = text.split(/^---+$/m);
-    if (parts.length < 2) {
-      throw new Error('Please separate the two YAML documents with "---" on its own line');
-    }
+    const inputs = input as Record<string, string>;
     
     let obj1: unknown, obj2: unknown;
     
     try {
-      obj1 = yaml.load(parts[0].trim());
+      obj1 = yaml.load((inputs.original || '').trim());
     } catch (e) {
       throw new Error(`First YAML is invalid: ${e instanceof Error ? e.message : 'Parse error'}`);
     }
     
     try {
-      obj2 = yaml.load(parts.slice(1).join('---').trim());
+      obj2 = yaml.load((inputs.modified || '').trim());
     } catch (e) {
       throw new Error(`Second YAML is invalid: ${e instanceof Error ? e.message : 'Parse error'}`);
     }

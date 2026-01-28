@@ -15,8 +15,11 @@ export const jsonDiff = defineTool({
   mode: 'browser',
   
   input: {
-    kind: 'text',
-    placeholder: 'Paste first JSON, then "---" separator, then second JSON',
+    kind: 'json',
+    elements: [
+      { name: 'original', kind: 'json', label: 'Original JSON', placeholder: 'Paste original JSON here' },
+      { name: 'modified', kind: 'json', label: 'Modified JSON', placeholder: 'Paste modified JSON here' },
+    ],
   },
   
   output: {
@@ -29,25 +32,20 @@ export const jsonDiff = defineTool({
   },
   
   async runBrowser(_ctx, input, options) {
-    const text = input as string;
-    
-    const parts = text.split(/^---+$/m);
-    if (parts.length < 2) {
-      throw new Error('Please separate the two JSON objects with "---" on its own line');
-    }
+    const inputs = input as Record<string, string>;
     
     let obj1: unknown, obj2: unknown;
     
     try {
-      obj1 = JSON.parse(parts[0].trim());
+      obj1 = JSON.parse((inputs.original || '').trim());
     } catch {
-      throw new Error('First JSON is invalid');
+      throw new Error('Original JSON is invalid');
     }
     
     try {
-      obj2 = JSON.parse(parts.slice(1).join('---').trim());
+      obj2 = JSON.parse((inputs.modified || '').trim());
     } catch {
-      throw new Error('Second JSON is invalid');
+      throw new Error('Modified JSON is invalid');
     }
     
     if (options.sortKeys) {

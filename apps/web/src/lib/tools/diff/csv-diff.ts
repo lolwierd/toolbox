@@ -17,7 +17,10 @@ export const csvDiff = defineTool({
   
   input: {
     kind: 'text',
-    placeholder: 'Paste first CSV, then "---" separator, then second CSV',
+    elements: [
+      { name: 'original', kind: 'text', label: 'Original CSV', placeholder: 'Paste original CSV here' },
+      { name: 'modified', kind: 'text', label: 'Modified CSV', placeholder: 'Paste modified CSV here' },
+    ],
   },
   
   output: {
@@ -31,15 +34,9 @@ export const csvDiff = defineTool({
   },
   
   async runBrowser(_ctx, input, options) {
-    const text = input as string;
-    
-    const parts = text.split(/^---+$/m);
-    if (parts.length < 2) {
-      throw new Error('Please separate the two CSV files with "---" on its own line');
-    }
-    
-    const csv1 = parts[0].trim();
-    const csv2 = parts.slice(1).join('---').trim();
+    const inputs = input as Record<string, string>;
+    const csv1 = (inputs.original || '').trim();
+    const csv2 = (inputs.modified || '').trim();
     
     if (!csv1 || !csv2) {
       throw new Error('Both CSV inputs are required');
